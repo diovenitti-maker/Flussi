@@ -474,7 +474,13 @@ export default function App() {
               + aggiungi fonte di entrata
             </button>
 
-            <div style={{display:"grid",gridTemplateColumns:"1fr 130px 30px",alignItems:"center",gap:10,padding:"12px 16px",marginTop:8,background:C.surface}}>
+            {/* totale parziale prima del riporto */}
+            <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:16,padding:"10px 16px",marginTop:8,borderTop:`1px solid ${C.border}`}}>
+              <span style={{fontSize:11,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.08em"}}>Subtotale entrate</span>
+              <span style={{fontFamily:"monospace",fontSize:15,fontWeight:600,color:C.green}}>€ {fmt(Object.values(incData).reduce((a,b)=>a+(Number(b)||0),0))}</span>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 130px 30px",alignItems:"center",gap:10,padding:"12px 16px",background:C.surface}}>
               <span style={{fontSize:13,color:C.textSoft,fontWeight:500}}>Avanzato dal mese precedente</span>
               <AmountInput value={carry} onChange={upCarry} color={C.green} dimColor={C.greenDim}/>
               <span/>
