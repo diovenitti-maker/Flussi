@@ -193,7 +193,7 @@ function InlineEdit({ value, onChange, style }) {
   );
 }
 
-const COLW = 88;
+const COLW = 66;
 function AmountInput({ value, onChange, color, dimColor, compact }) {
   const toStr = v => (v != null && v !== 0) ? String(v).replace(".",",") : "";
   const [local, setLocal] = useState(toStr(value));
@@ -227,7 +227,7 @@ function AmountInput({ value, onChange, color, dimColor, compact }) {
   }
 
   return (
-    <div style={{ display:"flex", alignItems:"center", background:dimColor, borderRadius:7, padding:compact?"6px 7px":"5px 10px", minWidth:compact?0:108 }}>
+    <div style={{ display:"flex", alignItems:"center", background:dimColor, borderRadius:7, padding:compact?"6px 5px":"5px 10px", minWidth:compact?0:108 }}>
       {!compact && <span style={{ color:C.textDim, fontSize:11, marginRight:3, fontFamily:"monospace" }}>€</span>}
       <input
         value={local} placeholder="0,00" inputMode="text"
@@ -237,7 +237,7 @@ function AmountInput({ value, onChange, color, dimColor, compact }) {
         style={{
           background:"transparent", border:"none",
           color, WebkitTextFillColor:color,
-          fontFamily:"monospace", fontSize:compact?14:13, fontWeight:600,
+          fontFamily:"monospace", fontSize:compact?13:13, fontWeight:600,
           textAlign:"right", width:"100%", minWidth:0, outline:"none",
         }}
       />
@@ -314,6 +314,8 @@ export default function App() {
   let totIncome=Number(carry)||0;
   incList.forEach(i=>{ totIncome+=Number(incData[i.id])||0; });
   const net = totIncome - totVar;
+  let totAnno=0;
+  structure.forEach(c=>c.subcats.forEach(s=>{ if(s.future) totAnno+=(Number(fixed[s.id])||0)*12; }));
 
   if (!loaded) return (
     <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:C.textSoft,fontFamily:"system-ui,sans-serif"}}>
@@ -375,6 +377,7 @@ export default function App() {
               <div style={{display:"flex",gap:6}}>
                 <span style={{width:COLW,textAlign:"right",fontSize:10,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700}}>Fisso</span>
                 <span style={{width:COLW,textAlign:"right",fontSize:10,color:C.pink,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700}}>Mese</span>
+                <span style={{width:COLW,textAlign:"right",fontSize:10,color:C.gold,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700}}>Anno</span>
               </div>
             </div>
 
@@ -426,9 +429,10 @@ export default function App() {
                             <span style={{fontSize:13,color:"#E8EAF0",lineHeight:1.25}}>{sub.name}</span>
                           )}
                         </div>
-                        <div style={{display:"flex",gap:6,flexShrink:0}}>
+                        <div style={{display:"flex",gap:6,flexShrink:0,alignItems:"center"}}>
                           <div style={{width:COLW}}><AmountInput compact value={fixed[sub.id]}    onChange={v=>upFixed(sub.id,v)} color={C.green} dimColor={C.greenDim}/></div>
                           <div style={{width:COLW}}><AmountInput compact value={variable[sub.id]} onChange={v=>upVar(sub.id,v)}   color={C.pink}  dimColor={C.pinkDim}/></div>
+                          <div style={{width:COLW,alignSelf:"center",textAlign:"right",fontFamily:"monospace",fontSize:12,fontWeight:600,color:sub.future?C.gold:C.textDim}}>{sub.future?fmt((Number(fixed[sub.id])||0)*12):"–"}</div>
                         </div>
                       </div>
                       {edit && (
@@ -469,6 +473,7 @@ export default function App() {
               <div style={{display:"flex",gap:6}}>
                 <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:700,color:C.green}}>{fmt(totFixed)}</span>
                 <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:700,color:C.pink}}>{fmt(totVar)}</span>
+                <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:700,color:C.gold}}>{fmt(totAnno)}</span>
               </div>
             </div>
           </div>
