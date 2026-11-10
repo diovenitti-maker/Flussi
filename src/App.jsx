@@ -390,10 +390,10 @@ export default function App() {
                     style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",cursor:edit?"default":"pointer",background:C.surface,userSelect:"none"}}
                   >
                     <span onClick={e=>{e.stopPropagation();toggleC(cat.id);}} style={{color:C.textSoft,fontSize:10,flexShrink:0,padding:"4px",display:"inline-block",transition:"transform .15s",transform:open?"rotate(90deg)":"rotate(0deg)"}}>▶</span>
-                    <div style={{flex:1,minWidth:0}}>
+                    <div style={{flex:1,minWidth:0,textAlign:"center"}}>
                       {edit ? (
                         <InlineEdit value={cat.name} onChange={v=>renameCat(cat.id,v)}
-                          style={{fontSize:14,fontWeight:700,color:"#FFFFFF",WebkitTextFillColor:"#FFFFFF",borderBottom:`1px dashed ${C.border}`}}/>
+                          style={{fontSize:14,fontWeight:700,color:"#FFFFFF",WebkitTextFillColor:"#FFFFFF",textAlign:"center",borderBottom:`1px dashed ${C.border}`}}/>
                       ) : (
                         <span style={{fontSize:14,fontWeight:700,color:"#FFFFFF"}}>{cat.name}</span>
                       )}
@@ -404,10 +404,7 @@ export default function App() {
                         style={{background:"none",border:`1px solid ${C.border}`,color:C.pink,cursor:"pointer",fontSize:11,padding:"3px 8px",borderRadius:10,flexShrink:0}}
                       >elimina</button>
                     ) : (
-                      <div style={{display:"flex",gap:6,flexShrink:0}}>
-                        <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:12,color:C.green}}>{fmt(cF)}</span>
-                        <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:12,color:C.pink}}>{fmt(cV)}</span>
-                      </div>
+                      <span style={{width:22,flexShrink:0}}/>
                     )}
                   </div>
 
