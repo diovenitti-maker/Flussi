@@ -193,7 +193,8 @@ function InlineEdit({ value, onChange, style }) {
   );
 }
 
-function AmountInput({ value, onChange, color, dimColor }) {
+const COLW = 88;
+function AmountInput({ value, onChange, color, dimColor, compact }) {
   const toStr = v => (v != null && v !== 0) ? String(v).replace(".",",") : "";
   const [local, setLocal] = useState(toStr(value));
   useEffect(() => setLocal(toStr(value)), [value]);
@@ -226,8 +227,8 @@ function AmountInput({ value, onChange, color, dimColor }) {
   }
 
   return (
-    <div style={{ display:"flex", alignItems:"center", background:dimColor, borderRadius:7, padding:"5px 10px", minWidth:108 }}>
-      <span style={{ color:C.textDim, fontSize:11, marginRight:3, fontFamily:"monospace" }}>€</span>
+    <div style={{ display:"flex", alignItems:"center", background:dimColor, borderRadius:7, padding:compact?"6px 7px":"5px 10px", minWidth:compact?0:108 }}>
+      {!compact && <span style={{ color:C.textDim, fontSize:11, marginRight:3, fontFamily:"monospace" }}>€</span>}
       <input
         value={local} placeholder="0,00" inputMode="text"
         onChange={e => setLocal(e.target.value)}
@@ -236,8 +237,8 @@ function AmountInput({ value, onChange, color, dimColor }) {
         style={{
           background:"transparent", border:"none",
           color, WebkitTextFillColor:color,
-          fontFamily:"monospace", fontSize:13, fontWeight:600,
-          textAlign:"right", width:"100%", outline:"none",
+          fontFamily:"monospace", fontSize:compact?14:13, fontWeight:600,
+          textAlign:"right", width:"100%", minWidth:0, outline:"none",
         }}
       />
     </div>
@@ -256,6 +257,7 @@ export default function App() {
   const [collapsed, setCollapsed] = useState({});
   const [tab,       setTab]       = useState("uscite");
   const [saving,    setSaving]    = useState(false);
+  const [edit,      setEdit]      = useState(false);
   const timer = useRef(null);
 
   // ── carica dallo storage (sovrascrive i default solo se esistono dati salvati)
@@ -323,19 +325,19 @@ export default function App() {
     <div style={{background:C.bg,minHeight:"100vh",fontFamily:"system-ui,-apple-system,sans-serif",color:C.text}}>
 
       {/* HEADER */}
-      <div style={{padding:"24px 24px 18px",borderBottom:`1px solid ${C.border}`}}>
+      <div style={{padding:"18px 14px 14px",borderBottom:`1px solid ${C.border}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14}}>
           <div>
             <div style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:C.textDim,marginBottom:5}}>Budget familiare condiviso</div>
             <h1 style={{margin:0,fontSize:24,fontWeight:300,color:C.text}}>Le <strong style={{color:C.green,fontWeight:700}}>buste</strong> di casa</h1>
           </div>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <div style={{display:"flex",gap:8,width:"100%"}}>
             {[
               {label:"Entrate",    val:totIncome, color:C.green},
               {label:"Uscite mese",val:totVar,    color:C.pink },
               {label:"Saldo",      val:net,       color:net>=0?C.green:C.pink},
             ].map(card=>(
-              <div key={card.label} style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 16px",minWidth:120}}>
+              <div key={card.label} style={{background:C.elevated,border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 12px",minWidth:90,flex:1}}>
                 <div style={{fontSize:10,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{card.label}</div>
                 <div style={{fontFamily:"monospace",fontSize:17,fontWeight:700,color:card.color,marginTop:4}}>€ {fmt(card.val)}</div>
               </div>
@@ -345,10 +347,10 @@ export default function App() {
       </div>
 
       {/* TABS */}
-      <div style={{display:"flex",gap:2,padding:"14px 24px 0",borderBottom:`1px solid ${C.border}`}}>
+      <div style={{display:"flex",gap:2,padding:"12px 10px 0",borderBottom:`1px solid ${C.border}`}}>
         {[["uscite","Buste di spesa"],["entrate","Entrate del mese"]].map(([k,l])=>(
           <button key={k} onClick={()=>setTab(k)} style={{
-            padding:"8px 20px",fontSize:13,fontWeight:tab===k?600:400,
+            padding:"8px 16px",fontSize:13,fontWeight:tab===k?600:400,
             color:tab===k?C.text:C.textSoft,
             background:tab===k?C.elevated:"transparent",
             border:`1px solid ${tab===k?C.border:"transparent"}`,
@@ -359,103 +361,118 @@ export default function App() {
       </div>
 
       {/* PANEL */}
-      <div style={{background:C.elevated,margin:"0 24px 24px",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 8px 8px 8px",paddingBottom:20}}>
+      <div style={{background:C.elevated,margin:"0 10px 24px",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 8px 8px 8px",paddingBottom:20}}>
 
         {tab==="uscite" ? (
           <div>
-
+            {/* barra modifica + intestazione colonne */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px 6px"}}>
+              <button onClick={()=>setEdit(!edit)} style={{
+                fontSize:12,padding:"5px 12px",borderRadius:14,cursor:"pointer",fontFamily:"system-ui",
+                background:edit?C.gold:"transparent",color:edit?"#1a1200":C.textSoft,
+                border:`1px solid ${edit?C.gold:C.border}`,fontWeight:edit?700:400,
+              }}>{edit?"✓ Fatto":"✎ Modifica voci"}</button>
+              <div style={{display:"flex",gap:6}}>
+                <span style={{width:COLW,textAlign:"right",fontSize:10,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700}}>Fisso</span>
+                <span style={{width:COLW,textAlign:"right",fontSize:10,color:C.pink,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700}}>Mese</span>
+              </div>
+            </div>
 
             {structure.map(cat=>{
               const open = !collapsed[cat.id];
               let cF=0,cV=0;
               cat.subcats.forEach(s=>{cF+=Number(fixed[s.id])||0;cV+=Number(variable[s.id])||0;});
               return (
-                <div key={cat.id} style={{borderBottom:`1px solid ${C.borderSoft}`}}>
+                <div key={cat.id} style={{borderTop:`1px solid ${C.borderSoft}`}}>
                   {/* riga categoria */}
                   <div
-                    onClick={()=>toggleC(cat.id)}
-                    style={{display:"flex",alignItems:"center",gap:10,padding:"11px 16px",cursor:"pointer",background:C.surface,userSelect:"none"}}
+                    onClick={()=>{ if(!edit) toggleC(cat.id); }}
+                    style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",cursor:edit?"default":"pointer",background:C.surface,userSelect:"none"}}
                   >
-                    <span style={{color:C.textSoft,fontSize:10,flexShrink:0,display:"inline-block",transition:"transform .15s",transform:open?"rotate(90deg)":"rotate(0deg)"}}>▶</span>
-                    <div onClick={e=>e.stopPropagation()} style={{flex:1,minWidth:0}}>
-                      <InlineEdit
-                        value={cat.name}
-                        onChange={v=>renameCat(cat.id,v)}
-                        style={{fontSize:14,fontWeight:700,color:"#FFFFFF",WebkitTextFillColor:"#FFFFFF"}}
-                      />
+                    <span onClick={e=>{e.stopPropagation();toggleC(cat.id);}} style={{color:C.textSoft,fontSize:10,flexShrink:0,padding:"4px",display:"inline-block",transition:"transform .15s",transform:open?"rotate(90deg)":"rotate(0deg)"}}>▶</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      {edit ? (
+                        <InlineEdit value={cat.name} onChange={v=>renameCat(cat.id,v)}
+                          style={{fontSize:14,fontWeight:700,color:"#FFFFFF",WebkitTextFillColor:"#FFFFFF",borderBottom:`1px dashed ${C.border}`}}/>
+                      ) : (
+                        <span style={{fontSize:14,fontWeight:700,color:"#FFFFFF"}}>{cat.name}</span>
+                      )}
                     </div>
-                    <span style={{fontFamily:"monospace",fontSize:12,color:C.green,minWidth:75,textAlign:"right",flexShrink:0}}>€ {fmt(cF)}</span>
-                    <span style={{fontFamily:"monospace",fontSize:12,color:C.pink, minWidth:75,textAlign:"right",flexShrink:0}}>€ {fmt(cV)}</span>
-                    <button
-                      onClick={e=>{e.stopPropagation();if(window.confirm(`Eliminare "${cat.name}"?`))deleteCat(cat.id);}}
-                      style={{background:"none",border:"none",color:C.textDim,cursor:"pointer",fontSize:16,padding:"0 2px",lineHeight:1,flexShrink:0}}
-                    >×</button>
+                    {edit ? (
+                      <button
+                        onClick={e=>{e.stopPropagation();if(window.confirm(`Eliminare la categoria "${cat.name}"?`))deleteCat(cat.id);}}
+                        style={{background:"none",border:`1px solid ${C.border}`,color:C.pink,cursor:"pointer",fontSize:11,padding:"3px 8px",borderRadius:10,flexShrink:0}}
+                      >elimina</button>
+                    ) : (
+                      <div style={{display:"flex",gap:6,flexShrink:0}}>
+                        <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:12,color:C.green}}>{fmt(cF)}</span>
+                        <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:12,color:C.pink}}>{fmt(cV)}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* sottocategorie */}
+                  {/* voci */}
                   {open && cat.subcats.map(sub=>(
                     <div key={sub.id} style={{
-                      padding:"9px 16px 11px 20px",
+                      padding:"5px 12px 5px 10px",
                       background:sub.future?C.goldDim:"transparent",
                       borderLeft:sub.future?`3px solid ${C.gold}`:"3px solid transparent",
-                      borderBottom:`1px solid ${C.borderSoft}`,
+                      borderTop:`1px solid ${C.borderSoft}`,
                     }}>
-                      {/* riga 1: nome */}
-                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                        <span style={{color:C.gold,fontSize:12,flexShrink:0,minWidth:16,textAlign:"center"}}>{sub.future?"★":""}</span>
-                        <InlineEdit
-                          value={sub.name}
-                          onChange={v=>renameSub(cat.id,sub.id,v)}
-                          style={{fontSize:14,fontWeight:500,color:"#E8EAF0",flex:1}}
-                        />
-                        <button onClick={()=>toggleFuture(cat.id,sub.id)} style={{
-                          fontSize:9,padding:"2px 8px",borderRadius:10,cursor:"pointer",flexShrink:0,
-                          background:sub.future?C.gold:C.elevated,
-                          color:sub.future?"#1a1200":C.textDim,
-                          border:`1px solid ${sub.future?C.gold:C.border}`,
-                          textTransform:"uppercase",letterSpacing:"0.05em",fontFamily:"system-ui",
-                        }}>futuro</button>
-                        <button onClick={()=>deleteSub(cat.id,sub.id)}
-                          style={{background:"none",border:"none",color:C.textDim,cursor:"pointer",fontSize:16,padding:"0 2px",lineHeight:1,flexShrink:0}}>×</button>
-                      </div>
-                      {/* riga 2: caselle importo */}
-                      <div style={{display:"flex",gap:8,paddingLeft:24}}>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:9,color:C.green,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>Fisso</div>
-                          <AmountInput value={fixed[sub.id]}    onChange={v=>upFixed(sub.id,v)} color={C.green} dimColor={C.greenDim}/>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <div style={{flex:1,minWidth:0,display:"flex",alignItems:"center",gap:5}}>
+                          {sub.future && <span style={{color:C.gold,fontSize:11,flexShrink:0}}>★</span>}
+                          {edit ? (
+                            <InlineEdit value={sub.name} onChange={v=>renameSub(cat.id,sub.id,v)}
+                              style={{fontSize:13,color:"#E8EAF0",WebkitTextFillColor:"#E8EAF0",borderBottom:`1px dashed ${C.border}`}}/>
+                          ) : (
+                            <span style={{fontSize:13,color:"#E8EAF0",lineHeight:1.25}}>{sub.name}</span>
+                          )}
                         </div>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:9,color:C.pink,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>Questo mese</div>
-                          <AmountInput value={variable[sub.id]} onChange={v=>upVar(sub.id,v)}   color={C.pink}  dimColor={C.pinkDim}/>
+                        <div style={{display:"flex",gap:6,flexShrink:0}}>
+                          <div style={{width:COLW}}><AmountInput compact value={fixed[sub.id]}    onChange={v=>upFixed(sub.id,v)} color={C.green} dimColor={C.greenDim}/></div>
+                          <div style={{width:COLW}}><AmountInput compact value={variable[sub.id]} onChange={v=>upVar(sub.id,v)}   color={C.pink}  dimColor={C.pinkDim}/></div>
                         </div>
                       </div>
+                      {edit && (
+                        <div style={{display:"flex",gap:8,margin:"4px 0 4px 2px"}}>
+                          <button onClick={()=>toggleFuture(cat.id,sub.id)} style={{
+                            fontSize:10,padding:"3px 10px",borderRadius:10,cursor:"pointer",
+                            background:sub.future?C.gold:"transparent",color:sub.future?"#1a1200":C.textSoft,
+                            border:`1px solid ${sub.future?C.gold:C.border}`,textTransform:"uppercase",letterSpacing:"0.05em",
+                          }}>★ futuro</button>
+                          <button onClick={()=>{if(window.confirm(`Eliminare "${sub.name}"?`))deleteSub(cat.id,sub.id);}} style={{
+                            fontSize:10,padding:"3px 10px",borderRadius:10,cursor:"pointer",background:"transparent",color:C.pink,border:`1px solid ${C.border}`,
+                          }}>elimina voce</button>
+                        </div>
+                      )}
                     </div>
                   ))}
 
-                  {open && (
+                  {open && edit && (
                     <button onClick={()=>addSub(cat.id)} style={{
-                      margin:"4px 16px 10px 42px",background:"none",border:"none",
-                      color:C.textDim,cursor:"pointer",fontSize:12,padding:"3px 8px",borderRadius:5,fontFamily:"system-ui",
+                      margin:"4px 12px 8px",background:"none",border:"none",
+                      color:C.textSoft,cursor:"pointer",fontSize:12,padding:"3px 8px",fontFamily:"system-ui",
                     }}>+ aggiungi voce</button>
                   )}
                 </div>
               );
             })}
 
-            <button onClick={addCat} style={{
-              margin:"16px 16px 0",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-              width:"calc(100% - 32px)",padding:"10px",background:"none",
-              border:`1.5px dashed ${C.border}`,color:C.textDim,cursor:"pointer",
-              fontSize:13,borderRadius:8,fontFamily:"system-ui",
-            }}>+ Nuova categoria</button>
+            {edit && (
+              <button onClick={addCat} style={{
+                margin:"14px 12px 0",display:"block",width:"calc(100% - 24px)",padding:"10px",background:"none",
+                border:`1.5px dashed ${C.border}`,color:C.textSoft,cursor:"pointer",
+                fontSize:13,borderRadius:8,fontFamily:"system-ui",
+              }}>+ Nuova categoria</button>
+            )}
 
-            <div style={{display:"flex",justifyContent:"flex-end",gap:24,padding:"18px 16px 4px",marginTop:8,borderTop:`1px solid ${C.border}`}}>
-              {[{l:"Totale fisso",v:totFixed,c:C.green},{l:"Totale mese",v:totVar,c:C.pink}].map(t=>(
-                <div key={t.l} style={{textAlign:"right"}}>
-                  <div style={{fontSize:10,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t.l}</div>
-                  <div style={{fontFamily:"monospace",fontSize:17,fontWeight:700,color:t.c,marginTop:3}}>€ {fmt(t.v)}</div>
-                </div>
-              ))}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 12px 4px",marginTop:8,borderTop:`1px solid ${C.border}`}}>
+              <span style={{fontSize:11,color:C.textDim,textTransform:"uppercase",letterSpacing:"0.08em"}}>Totale</span>
+              <div style={{display:"flex",gap:6}}>
+                <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:700,color:C.green}}>{fmt(totFixed)}</span>
+                <span style={{width:COLW,textAlign:"right",fontFamily:"monospace",fontSize:14,fontWeight:700,color:C.pink}}>{fmt(totVar)}</span>
+              </div>
             </div>
           </div>
 
