@@ -318,7 +318,7 @@ export default function App() {
   incList.forEach(i=>{ totIncome+=Number(incData[i.id])||0; });
   const net = totIncome - totVar;
   let totAnno=0;
-  structure.forEach(c=>c.subcats.forEach(s=>{ totAnno+=Number(annual[s.id])||0; }));
+  structure.forEach(c=>c.subcats.forEach(s=>{ if(s.future) totAnno+=Number(annual[s.id])||0; }));
 
   if (!loaded) return (
     <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:C.textSoft,fontFamily:"system-ui,sans-serif"}}>
@@ -435,7 +435,7 @@ export default function App() {
                         <div style={{display:"flex",gap:6,flexShrink:0,alignItems:"center"}}>
                           <div style={{width:COLW}}><AmountInput compact value={fixed[sub.id]}    onChange={v=>upFixed(sub.id,v)} color={C.green} dimColor={C.greenDim}/></div>
                           <div style={{width:COLW}}><AmountInput compact value={variable[sub.id]} onChange={v=>upVar(sub.id,v)}   color={C.pink}  dimColor={C.pinkDim}/></div>
-                          <div style={{width:COLW}}><AmountInput compact value={annual[sub.id]} onChange={v=>upAnnual(sub.id,v)} color={C.gold} dimColor={C.goldDim}/></div>
+                          <div style={{width:COLW}}>{sub.future && <AmountInput compact value={annual[sub.id]} onChange={v=>upAnnual(sub.id,v)} color={C.gold} dimColor={C.goldDim}/>}</div>
                         </div>
                       </div>
                       {edit && (
