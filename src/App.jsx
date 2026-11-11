@@ -252,6 +252,7 @@ export default function App() {
   const [incList,   setIncList]   = useState(INCOME_LIST);
   const [fixed,     setFixedData] = useState(INIT_FIXED);
   const [variable,  setVarData]   = useState({});
+  const [annual,    setAnnualData] = useState({});
   const [incData,   setIncData]   = useState(INIT_INCOME);
   const [carry,     setCarryVal]  = useState(0);
   const [collapsed, setCollapsed] = useState({});
@@ -263,9 +264,9 @@ export default function App() {
   // ── carica dallo storage (sovrascrive i default solo se esistono dati salvati)
   useEffect(() => {
     async function load() {
-      const [s, il, f, v, id, c, col] = await Promise.all([
+      const [s, il, f, v, id, c, col, an] = await Promise.all([
         fbGet("structure"), fbGet("incList"), fbGet("fixed"),
-        fbGet("variable"), fbGet("incData"), fbGet("carry"), fbGet("collapsed"),
+        fbGet("variable"), fbGet("incData"), fbGet("carry"), fbGet("collapsed"), fbGet("annual"),
       ]);
       if (s)   setStructure(JSON.parse(s));
       if (il)  setIncList(JSON.parse(il));
@@ -274,6 +275,7 @@ export default function App() {
       if (id)  setIncData(JSON.parse(id));
       if (c)   setCarryVal(Number(c) || 0);
       if (col) setCollapsed(JSON.parse(col));
+      if (an)  setAnnualData(JSON.parse(an));
       setLoaded(true);
     }
     load();
@@ -292,6 +294,7 @@ export default function App() {
   const pInc    = useCallback(n => { setIncList(n);   save("incList",n);   },[]);
   const upFixed = (id,v) => { const n={...fixed,[id]:v};    setFixedData(n); save("fixed",n); };
   const upVar   = (id,v) => { const n={...variable,[id]:v}; setVarData(n);   save("variable",n);   };
+  const upAnnual = (id,v) => { const n={...annual,[id]:v}; setAnnualData(n); save("annual",n); };
   const upInc   = (id,v) => { const n={...incData,[id]:v};  setIncData(n);   save("incData",n);   };
   const upCarry = v      => { setCarryVal(v);                                  save("carry",String(v)); };
   const toggleC = id     => { const n={...collapsed,[id]:!collapsed[id]}; setCollapsed(n); save("collapsed",n); };
@@ -315,7 +318,7 @@ export default function App() {
   incList.forEach(i=>{ totIncome+=Number(incData[i.id])||0; });
   const net = totIncome - totVar;
   let totAnno=0;
-  structure.forEach(c=>c.subcats.forEach(s=>{ if(s.future) totAnno+=(Number(fixed[s.id])||0)*12; }));
+  structure.forEach(c=>c.subcats.forEach(s=>{ totAnno+=Number(annual[s.id])||0; }));
 
   if (!loaded) return (
     <div style={{background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:C.textSoft,fontFamily:"system-ui,sans-serif"}}>
@@ -432,7 +435,7 @@ export default function App() {
                         <div style={{display:"flex",gap:6,flexShrink:0,alignItems:"center"}}>
                           <div style={{width:COLW}}><AmountInput compact value={fixed[sub.id]}    onChange={v=>upFixed(sub.id,v)} color={C.green} dimColor={C.greenDim}/></div>
                           <div style={{width:COLW}}><AmountInput compact value={variable[sub.id]} onChange={v=>upVar(sub.id,v)}   color={C.pink}  dimColor={C.pinkDim}/></div>
-                          <div style={{width:COLW,alignSelf:"center",textAlign:"right",fontFamily:"monospace",fontSize:12,fontWeight:600,color:sub.future?C.gold:C.textDim}}>{sub.future?fmt((Number(fixed[sub.id])||0)*12):"–"}</div>
+                          <div style={{width:COLW}}><AmountInput compact value={annual[sub.id]} onChange={v=>upAnnual(sub.id,v)} color={C.gold} dimColor={C.goldDim}/></div>
                         </div>
                       </div>
                       {edit && (
